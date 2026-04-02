@@ -161,9 +161,20 @@
   .modal-close:hover { background: var(--border); }
   .modal-title { font-size: 16px; font-weight: 700; padding: 14px 20px; border-bottom: 1px solid var(--border); line-height: 1.5; }
   .modal-body-text { padding: 16px 20px; font-size: 13px; color: var(--text2); line-height: 1.8; white-space: pre-wrap; word-break: break-word; }
+  .modal-body-text table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 12px; white-space: normal; }
+  .modal-body-text th, .modal-body-text td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; vertical-align: top; }
+  .modal-body-text th { background: var(--surface2); font-weight: 600; }
+  .modal-body-text ul, .modal-body-text ol { padding-left: 20px; margin: 4px 0; }
+  .modal-body-text li { margin: 2px 0; }
+  .modal-body-text strong, .modal-body-text b { font-weight: 700; color: var(--text); }
+  .modal-body-text em, .modal-body-text i { font-style: italic; }
+  .modal-body-text blockquote { border-left: 3px solid var(--accent2); padding-left: 12px; margin: 8px 0; color: var(--text3); }
+  .modal-body-text pre, .modal-body-text code { background: var(--surface2); border-radius: 4px; padding: 2px 5px; font-size: 12px; font-family: monospace; }
+  .modal-body-text a { color: var(--accent); text-decoration: underline; }
+  .modal-body-text p { margin: 4px 0; }
   .modal-comments { padding: 0 20px 20px; }
   .comments-label { font-size: 12px; font-weight: 700; color: var(--text3); padding: 12px 0 10px; border-top: 1px solid var(--border); }
-  .comment-item { background: #f7f9ff; border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px; margin-bottom: 7px; font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .comment-item { background: #f7f9ff; border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px; margin-bottom: 7px; font-size: 12px; color: var(--text2); line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
   .comment-meta { font-size: 11px; color: var(--text3); margin-bottom: 3px; font-weight: 500; }
 
   /* ════════════════════════════
@@ -412,6 +423,14 @@ function filterAndRender() {
 // ════════════════════════════
 // 프로젝트 렌더
 // ════════════════════════════
+// HTML → 미리보기용 텍스트 (태그 제거)
+function htmlToPreview(html) {
+  if (!html) return '';
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.innerText.replace(/\s+/g, ' ').trim();
+}
+
 function renderProject(posts) {
   const grid = document.getElementById('cards-grid');
   const empty = document.getElementById('proj-empty');
@@ -423,13 +442,16 @@ function renderProject(posts) {
     const card = document.createElement('div');
     card.className = 'card';
     const cCount = p['댓글'] ? p['댓글'].split(' | ').filter(c=>c.trim()).length : 0;
+    // 내용_html(뷰어용) 또는 내용(일반용) 둘 다 지원
+    const rawBody = p['내용_html'] || p['내용'] || '';
+    const previewText = htmlToPreview(rawBody);
     card.innerHTML = `
       <div class="card-meta">
         <div class="avatar">${esc((p['작성자']||'?').slice(0,1))}</div>
         <div><div class="meta-author">${esc(p['작성자']||'')}</div><div class="meta-date">${esc(p['날짜']||'')}</div></div>
       </div>
       <div class="card-title">${esc(p['제목']||'(제목 없음)')}</div>
-      <div class="card-body">${esc(p['내용']||'')}</div>
+      <div class="card-body">${esc(previewText)}</div>
       ${cCount > 0 ? `<div class="comment-badge">💬 ${cCount}</div>` : ''}
     `;
     card.addEventListener('click', () => openModal(p));
@@ -442,15 +464,29 @@ function openModal(p) {
   document.getElementById('m-name').textContent = p['작성자']||'';
   document.getElementById('m-date').textContent = p['날짜']||'';
   document.getElementById('m-title').textContent = p['제목']||'(제목 없음)';
-  document.getElementById('m-body').textContent = p['내용']||'';
+
+  // 내용_html(뷰어용 CSV) 우선, 없으면 내용(일반 CSV) 사용
+  const bodyEl = document.getElementById('m-body');
+  const rawBody = p['내용_html'] || p['내용'] || '';
+  if (/<[a-z][\s\S]*>/i.test(rawBody)) {
+    bodyEl.innerHTML = sanitizeHTML(rawBody);
+  } else {
+    bodyEl.textContent = rawBody;
+  }
+
   const mc = document.getElementById('m-comments');
   const comments = (p['댓글']||'').split(' | ').filter(c=>c.trim());
   mc.innerHTML = comments.length ? `<div class="comments-label">댓글 ${comments.length}개</div>` : '';
   comments.forEach(c => {
-    const m = c.match(/^\[(.+?)\]\s*(.*)$/s);
+    const m = c.match(/^\[(.+?)\]\s*([\s\S]*)$/);
     const div = document.createElement('div');
     div.className = 'comment-item';
-    div.innerHTML = m ? `<div class="comment-meta">${esc(m[1])}</div>${esc(m[2])}` : esc(c);
+    if (m) {
+      const commentBody = /<[a-z][\s\S]*>/i.test(m[2]) ? sanitizeHTML(m[2]) : esc(m[2]);
+      div.innerHTML = `<div class="comment-meta">${esc(m[1])}</div>${commentBody}`;
+    } else {
+      div.textContent = c;
+    }
     mc.appendChild(div);
   });
   document.getElementById('modal-overlay').classList.add('open');
@@ -472,32 +508,14 @@ function renderChat(msgs) {
   if (!msgs.length) { empty.style.display = 'block'; return; }
   empty.style.display = 'none';
 
-  // 날짜 오름차순 정렬 (오래된 메시지가 위, 최신이 아래)
-  // 날짜: "2026-03-30 (월)", 시간: "오후 4:04" 형식 처리
-  function parseSortKey(m) {
-    const dateStr = (m['날짜'] || '').replace(/\s*\(.*?\)/, '').trim(); // "(월)" 등 제거
-    const timeStr = m['시간'] || '';
-    // 오전/오후 → 24시간 변환
-    const match = timeStr.match(/^(오전|오후)\s*(\d+):(\d+)$/);
-    if (!match) return dateStr;
-    let h = parseInt(match[2]);
-    const min = match[3];
-    if (match[1] === '오후' && h !== 12) h += 12;
-    if (match[1] === '오전' && h === 12) h = 0;
-    return `${dateStr} ${String(h).padStart(2,'0')}:${min}`;
-  }
-
-  const sorted = [...msgs].sort((a, b) => parseSortKey(a).localeCompare(parseSortKey(b)));
-
   let lastDate = '', lastSender = '', lastTime = '';
 
-  sorted.forEach((m, i) => {
+  msgs.forEach((m, i) => {
     const isMe = m['발신자'] === '나';
     const date = m['날짜'] || '';
     const sender = m['발신자'] || '';
     const time = m['시간'] || '';
-    // ↵ → 실제 줄바꿈으로 복원
-    const body = (m['내용'] || '').replace(/↵/g, '\n');
+    const body = m['내용'] || '';
 
     // 날짜 구분선
     if (date && date !== lastDate) {
@@ -535,6 +553,28 @@ function renderChat(msgs) {
 
 function esc(s) {
   return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function sanitizeHTML(html) {
+  const allowed = new Set(['p','br','b','strong','i','em','u','s','strike',
+    'ul','ol','li','table','thead','tbody','tr','th','td',
+    'h1','h2','h3','h4','h5','h6','blockquote','pre','code','span','div','a']);
+  const allowedAttrs = new Set(['href','target','colspan','rowspan','style']);
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.querySelectorAll('script,style,iframe,object,embed,form,input,button').forEach(el => el.remove());
+  doc.body.querySelectorAll('*').forEach(el => {
+    if (!allowed.has(el.tagName.toLowerCase())) { el.replaceWith(...el.childNodes); return; }
+    [...el.attributes].forEach(attr => {
+      if (!allowedAttrs.has(attr.name.toLowerCase())) { el.removeAttribute(attr.name); return; }
+      if (attr.name === 'href' && /^\s*javascript:/i.test(attr.value)) el.removeAttribute('href');
+      if (attr.name === 'style' && /(expression|javascript|url)\s*\(/i.test(attr.value)) el.removeAttribute('style');
+    });
+    if (el.tagName.toLowerCase() === 'a') {
+      el.setAttribute('target', '_blank');
+      el.setAttribute('rel', 'noopener noreferrer');
+    }
+  });
+  return doc.body.innerHTML;
 }
 </script>
 </body>
