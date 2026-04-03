@@ -3,797 +3,163 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flow 백업 — 크롬 확장 프로그램</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet" />
+  <title>Flow 백업</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --bg: #080d14;
-      --surface: #0d1520;
-      --border: #1a2d48;
-      --accent: #2a7fff;
-      --accent2: #5dc8ff;
-      --text: #d4e4f4;
-      --muted: #4d6b8a;
-      --mono: 'IBM Plex Mono', monospace;
-      --sans: 'Noto Sans KR', sans-serif;
-    }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html { scroll-behavior: smooth; }
-
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* ── 배경 그리드 패턴 ── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(42,127,255,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(42,127,255,0.04) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ── 상단 글로우 ── */
-    body::after {
-      content: '';
-      position: fixed;
-      top: -200px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 800px;
-      height: 400px;
-      background: radial-gradient(ellipse, rgba(42,127,255,0.12) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ── NAV ── */
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 40px;
-      background: rgba(8,13,20,0.8);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .nav-logo {
-      font-family: var(--mono);
+      background: #080d14;
+      color: #d4e4f4;
+      font-family: 'Noto Sans KR', sans-serif;
       font-size: 14px;
-      color: var(--accent2);
-      letter-spacing: 0.08em;
-    }
-    .nav-logo span { color: var(--muted); }
-
-    .nav-badge {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      padding: 4px 10px;
-      border-radius: 20px;
-    }
-
-    /* ── MAIN SECTIONS ── */
-    main { position: relative; z-index: 1; }
-
-    section { padding: 120px 40px 80px; max-width: 800px; margin: 0 auto; }
-
-    /* ── HERO ── */
-    .hero {
-      padding-top: 160px;
-      padding-bottom: 100px;
-      text-align: center;
-    }
-
-    .hero-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--accent);
-      background: rgba(42,127,255,0.08);
-      border: 1px solid rgba(42,127,255,0.25);
-      padding: 6px 14px;
-      border-radius: 20px;
-      letter-spacing: 0.1em;
-      margin-bottom: 32px;
-      animation: fadeUp 0.6s ease both;
-    }
-
-    .hero-eyebrow::before {
-      content: '';
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--accent);
-      animation: pulse 2s ease infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.7); }
-    }
-
-    h1 {
-      font-size: clamp(38px, 6vw, 64px);
-      font-weight: 900;
-      line-height: 1.1;
-      letter-spacing: -0.03em;
-      animation: fadeUp 0.6s 0.1s ease both;
-    }
-
-    h1 .accent {
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero-sub {
-      margin-top: 20px;
-      font-size: 16px;
-      color: var(--muted);
       line-height: 1.7;
-      font-weight: 300;
-      animation: fadeUp 0.6s 0.2s ease both;
     }
+    main { max-width: 720px; margin: 0 auto; padding: 60px 24px; }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 40px; }
+    h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #7eb8f7; }
+    section { margin-bottom: 48px; }
+    p { color: #8aaac8; margin-bottom: 8px; }
 
-    /* ── CTA 버튼 ── */
-    .cta-group {
-      margin-top: 44px;
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-      animation: fadeUp 0.6s 0.3s ease both;
-    }
+    /* 기능 */
+    .feature-list { display: flex; flex-direction: column; gap: 12px; }
+    .feature { background: #0d1520; border: 1px solid #1a2d48; border-radius: 8px; padding: 16px 20px; }
+    .feature-title { font-weight: 700; margin-bottom: 4px; }
+    .feature-desc { color: #4d6b8a; font-size: 13px; }
 
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 28px;
-      background: var(--accent);
-      color: #fff;
-      font-family: var(--sans);
-      font-size: 14px;
-      font-weight: 700;
-      text-decoration: none;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .btn-primary::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(42,127,255,0.4); }
-    .btn-primary:hover::before { opacity: 1; }
-
-    .btn-secondary {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 24px;
-      background: transparent;
-      color: var(--text);
-      font-family: var(--sans);
-      font-size: 14px;
-      font-weight: 400;
-      text-decoration: none;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-secondary:hover { border-color: var(--muted); background: rgba(255,255,255,0.03); }
-
-    /* ── 버전 태그 ── */
-    .version-tag {
-      display: inline-block;
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--accent2);
-      background: rgba(93,200,255,0.08);
-      border: 1px solid rgba(93,200,255,0.2);
-      padding: 2px 8px;
-      border-radius: 4px;
-      vertical-align: middle;
-      margin-left: 8px;
-    }
-
-    /* ── 프리뷰 카드 ── */
-    .preview-card {
-      margin: 60px auto 0;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      animation: fadeUp 0.6s 0.4s ease both;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(42,127,255,0.08);
-    }
-
-    .card-topbar {
-      background: rgba(255,255,255,0.03);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 16px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .dot { width: 10px; height: 10px; border-radius: 50%; }
-    .dot-r { background: #ff5f57; }
-    .dot-y { background: #ffbd2e; }
-    .dot-g { background: #28c840; }
-
-    .card-topbar-title {
-      margin-left: auto;
-      margin-right: auto;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .panel-mock {
-      padding: 24px;
-      display: flex;
-      justify-content: center;
-    }
-
-    .flow-panel {
-      background: #1a1a2e;
-      border: 1px solid #2a4a7f;
-      border-radius: 12px;
-      padding: 14px 16px;
-      width: 230px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 12px;
-      color: #eee;
-    }
-
-    .fp-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .fp-title { color: #7eb8f7; font-weight: 600; font-size: 13px; }
-    .fp-badge { font-size: 11px; color: #6080a0; text-align: center; margin-bottom: 10px; }
-
-    .fp-label { color: #6080a0; font-size: 11px; margin-bottom: 4px; }
-
-    .fp-select {
-      width: 100%;
-      padding: 5px 8px;
-      background: #0f3460;
-      border: 1px solid #264d80;
-      border-radius: 6px;
-      color: #eee;
-      font-size: 11px;
-      margin-bottom: 10px;
-      font-family: inherit;
-    }
-
-    .fp-btn {
-      display: block;
-      width: 100%;
-      padding: 8px;
-      border: none;
-      border-radius: 8px;
-      font-size: 12px;
-      cursor: default;
-      font-family: inherit;
-      text-align: center;
-      margin-bottom: 6px;
-    }
-
-    .fp-btn-start { background: #0e4fa8; color: #fff; }
-    .fp-btn-stop  { background: #7b1f1f; color: #fff; display: none; }
-
-    .fp-status {
-      margin-top: 8px;
-      font-size: 11px;
-      color: #7eb8f7;
-      text-align: center;
-      line-height: 1.6;
-    }
-
-    /* ── 섹션 공통 ── */
-    .section-label {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--accent);
-      letter-spacing: 0.12em;
-      margin-bottom: 12px;
-    }
-
-    h2 {
-      font-size: 28px;
-      font-weight: 900;
-      letter-spacing: -0.02em;
-      margin-bottom: 16px;
-    }
-
-    .section-desc {
-      font-size: 15px;
-      color: var(--muted);
-      line-height: 1.75;
-      font-weight: 300;
-      margin-bottom: 40px;
-    }
-
-    /* ── 기능 그리드 ── */
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 16px;
-    }
-
-    .feature-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 20px;
-      transition: border-color 0.2s, transform 0.2s;
-    }
-
-    .feature-card:hover { border-color: rgba(42,127,255,0.4); transform: translateY(-2px); }
-
-    .feature-icon {
-      font-size: 24px;
-      margin-bottom: 12px;
-    }
-
-    .feature-title {
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-
-    .feature-desc {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    /* ── 설치 스텝 ── */
+    /* 설치 */
     .steps { display: flex; flex-direction: column; gap: 0; }
-
-    .step {
-      display: flex;
-      gap: 20px;
-      padding: 24px 0;
-      border-bottom: 1px solid var(--border);
-      animation: fadeUp 0.5s ease both;
-    }
-
+    .step { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid #1a2d48; }
     .step:last-child { border-bottom: none; }
-
     .step-num {
       flex-shrink: 0;
-      width: 32px; height: 32px;
+      width: 28px; height: 28px;
       border-radius: 50%;
-      background: rgba(42,127,255,0.12);
+      background: rgba(42,127,255,0.1);
       border: 1px solid rgba(42,127,255,0.3);
       display: flex; align-items: center; justify-content: center;
-      font-family: var(--mono);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--accent);
+      font-size: 12px; font-weight: 700; color: #2a7fff;
     }
-
-    .step-content h3 {
-      font-size: 15px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .step-content p {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    .code-inline {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--accent2);
-      background: rgba(93,200,255,0.08);
-      padding: 1px 6px;
-      border-radius: 4px;
+    .step-content h3 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .step-content p { font-size: 13px; color: #4d6b8a; margin: 0; }
+    code {
+      font-family: monospace; font-size: 12px;
+      color: #5dc8ff; background: rgba(93,200,255,0.08);
+      padding: 1px 6px; border-radius: 4px;
       border: 1px solid rgba(93,200,255,0.15);
     }
 
-    /* ── 주의사항 ── */
-    .notice-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+    /* 버튼 */
+    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; background: #2a7fff; color: #fff;
+      font-family: inherit; font-size: 14px; font-weight: 700;
+      text-decoration: none; border-radius: 8px; border: none; cursor: pointer;
     }
-
-    .notice-item {
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      padding: 14px 16px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 13px;
-      color: var(--text);
-      line-height: 1.6;
+    .btn-primary:hover { background: #1a6fee; }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 20px; background: transparent; color: #d4e4f4;
+      font-family: inherit; font-size: 14px;
+      text-decoration: none; border-radius: 8px;
+      border: 1px solid #1a2d48; cursor: pointer;
     }
+    .btn-secondary:hover { border-color: #2a4a7f; }
 
-    .notice-icon { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
-
-    /* ── 다운로드 섹션 ── */
-    .download-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 40px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
+    /* 뷰어 설명 */
+    .viewer-desc {
+      background: #0d1520; border: 1px solid #1a2d48;
+      border-radius: 8px; padding: 16px 20px; margin-top: 12px;
+      font-size: 13px; color: #4d6b8a;
     }
-
-    .download-box::before {
-      content: '';
-      position: absolute;
-      top: -60px; left: 50%;
-      transform: translateX(-50%);
-      width: 300px; height: 200px;
-      background: radial-gradient(ellipse, rgba(42,127,255,0.12) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .download-box h2 {
-      font-size: 24px;
-      margin-bottom: 8px;
-    }
-
-    .download-box p {
-      color: var(--muted);
-      font-size: 14px;
-      margin-bottom: 28px;
-    }
-
-    .file-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 24px;
-    }
-
-    .file-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(255,255,255,0.02);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 16px;
-      text-align: left;
-    }
-
-    .file-name {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--accent2);
-    }
-
-    .file-desc {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-
-    .file-size {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    /* ── 버전 히스토리 ── */
-    .changelog {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .changelog-item {
-      display: flex;
-      gap: 20px;
-      align-items: flex-start;
-    }
-
-    .changelog-ver {
-      flex-shrink: 0;
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--accent);
-      background: rgba(42,127,255,0.08);
-      border: 1px solid rgba(42,127,255,0.2);
-      padding: 3px 10px;
-      border-radius: 20px;
-      white-space: nowrap;
-    }
-
-    .changelog-desc {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.7;
-      padding-top: 3px;
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      position: relative; z-index: 1;
-      border-top: 1px solid var(--border);
-      padding: 32px 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      font-size: 12px;
-      color: var(--muted);
-      font-family: var(--mono);
-    }
-
-    /* ── 애니메이션 ── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ── 반응형 ── */
-    @media (max-width: 600px) {
-      nav { padding: 14px 20px; }
-      section { padding: 100px 20px 60px; }
-      .download-box { padding: 24px 20px; }
-      footer { padding: 24px 20px; flex-direction: column; align-items: flex-start; }
-    }
+    .viewer-desc li { margin-left: 16px; margin-bottom: 4px; }
   </style>
 </head>
 <body>
+<main>
 
-  <!-- NAV -->
-  <nav>
-    <span class="nav-logo">flow<span>.</span>backup</span>
-    <span class="nav-badge">Chrome Extension</span>
-  </nav>
+  <h1>Flow 백업</h1>
 
-  <main>
-
-    <!-- ── HERO ── -->
-    <section class="hero">
-      <div class="hero-eyebrow">크롬 확장 프로그램 · 무료 · 오픈소스</div>
-      <h1>
-        플로우 채팅<br />
-        <span class="accent">한 번에 백업</span>
-      </h1>
-      <p class="hero-sub">
-        채팅방을 열고 버튼 하나만 누르면<br />
-        자동 스크롤 후 전체 대화를 CSV로 저장합니다.
-      </p>
-      <div class="cta-group">
-        <a href="flow-backup-ext-v10b.zip" download class="btn-primary">
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg>
-          ZIP 다운로드
-        </a>
-        <a href="flow_viewer.html" class="btn-secondary">
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          백업 뷰어 열기
-        </a>
-        <a href="#install" class="btn-secondary">
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
-          설치 방법 보기
-        </a>
+  <!-- 기능 -->
+  <section>
+    <h2>기능</h2>
+    <div class="feature-list">
+      <div class="feature">
+        <div class="feature-title">💬 채팅 백업</div>
+        <div class="feature-desc">채팅방 전체 대화를 자동 수집해 CSV로 저장합니다.</div>
       </div>
+      <div class="feature">
+        <div class="feature-title">📋 프로젝트 백업</div>
+        <div class="feature-desc">게시글과 댓글을 포함한 프로젝트 내역을 CSV로 내보냅니다.</div>
+      </div>
+      <div class="feature">
+        <div class="feature-title">📥 파일 일괄 다운로드</div>
+        <div class="feature-desc">프로젝트 파일 탭의 전체 첨부파일을 한 번에 다운로드합니다.</div>
+      </div>
+    </div>
+  </section>
 
-      <!-- 패널 미리보기 -->
-      <div class="preview-card">
-        <div class="card-topbar">
-          <div class="dot dot-r"></div>
-          <div class="dot dot-y"></div>
-          <div class="dot dot-g"></div>
-          <span class="card-topbar-title">flow.team — 채팅</span>
-        </div>
-        <div class="panel-mock">
-          <div class="flow-panel">
-            <div class="fp-header">
-              <span class="fp-title">💬 채팅 백업</span>
-              <span style="color:#6080a0; font-size:16px;">−</span>
-            </div>
-            <div class="fp-badge">📍 채팅 모드</div>
-            <div class="fp-label">스크롤 속도</div>
-            <select class="fp-select">
-              <option>보통</option>
-            </select>
-            <button class="fp-btn fp-btn-start">▶ 전체 백업 시작</button>
-            <div class="fp-status">채팅방을 열고 시작하세요.</div>
-          </div>
+  <!-- 설치 방법 -->
+  <section>
+    <h2>설치 방법</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>ZIP 다운로드 및 압축 해제</h3>
+          <p>아래 버튼으로 ZIP을 받고 원하는 폴더에 압축을 푸세요.</p>
         </div>
       </div>
-    </section>
-
-    <!-- ── 기능 ── -->
-    <section id="features">
-      <div class="section-label">// FEATURES</div>
-      <h2>이런 기능이 있어요</h2>
-      <p class="section-desc">설정 없이 바로 쓸 수 있도록 만들었습니다.</p>
-      <div class="features">
-        <div class="feature-card">
-          <div class="feature-icon">💬</div>
-          <div class="feature-title">채팅 백업</div>
-          <div class="feature-desc">1:1 / 그룹 채팅방 전체 대화를 자동 스크롤하며 수집합니다.</div>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">📋</div>
-          <div class="feature-title">프로젝트 백업</div>
-          <div class="feature-desc">게시글·댓글까지 포함해 프로젝트 내역을 통째로 내보냅니다.</div>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">📥</div>
-          <div class="feature-title">CSV 자동 다운로드</div>
-          <div class="feature-desc">엑셀에서 바로 열 수 있는 UTF-8 BOM CSV로 저장됩니다.</div>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">⚡</div>
-          <div class="feature-title">속도 조절</div>
-          <div class="feature-desc">느림 / 보통 / 빠름 3단계로 네트워크 상황에 맞게 조절하세요.</div>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🖱️</div>
-          <div class="feature-title">드래그 가능한 패널</div>
-          <div class="feature-desc">화면 어디든 끌어서 채팅창이 가려지지 않게 배치하세요.</div>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🔗</div>
-          <div class="feature-title">URL 자동 감지</div>
-          <div class="feature-desc">채팅/프로젝트 페이지를 구분해 적절한 모드로 자동 전환됩니다.</div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>크롬 확장 프로그램 페이지 열기</h3>
+          <p>
+            <button onclick="navigator.clipboard.writeText('chrome://extensions').then(()=>{ this.textContent='✓ 복사됨'; setTimeout(()=>this.textContent='chrome://extensions 복사',1500) })" class="btn-secondary" style="padding:6px 14px; font-size:13px; margin-top:6px;">chrome://extensions 복사</button>
+          </p>
         </div>
       </div>
-    </section>
-
-    <!-- ── 설치 ── -->
-    <section id="install">
-      <div class="section-label">// INSTALL</div>
-      <h2>설치 방법</h2>
-      <p class="section-desc">크롬 스토어 등록 없이 개발자 모드로 바로 설치할 수 있습니다.</p>
-      <div class="steps">
-        <div class="step">
-          <div class="step-num">1</div>
-          <div class="step-content">
-            <h3>ZIP 파일 다운로드 및 압축 해제</h3>
-            <p>아래 다운로드 버튼을 클릭해 ZIP을 받고, 원하는 폴더에 압축을 풀어주세요.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">2</div>
-          <div class="step-content">
-            <h3>크롬 확장 프로그램 페이지 열기</h3>
-            <p>크롬 주소창에 <code class="code-inline">chrome://extensions</code> 를 입력하고 Enter.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">3</div>
-          <div class="step-content">
-            <h3>개발자 모드 ON</h3>
-            <p>페이지 우측 상단의 <strong>개발자 모드</strong> 토글을 켜주세요.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">4</div>
-          <div class="step-content">
-            <h3>폴더 선택</h3>
-            <p><strong>압축해제된 확장 프로그램을 로드합니다</strong> 클릭 → 압축 해제한 폴더 선택.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">5</div>
-          <div class="step-content">
-            <h3>플로우 메신저에서 사용</h3>
-            <p>flow.team 또는 myflow.kr 접속 → 채팅방 / 프로젝트 열기 → 우측 하단 패널에서 <strong>▶ 전체 백업 시작</strong> 클릭.</p>
-          </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>개발자 모드 ON</h3>
+          <p>우측 상단 개발자 모드 토글을 켜세요.</p>
         </div>
       </div>
-    </section>
-
-    <!-- ── 주의사항 ── -->
-    <section id="notes">
-      <div class="section-label">// NOTES</div>
-      <h2>사용 전 알아두세요</h2>
-      <p class="section-desc"></p>
-      <div class="notice-list">
-        <div class="notice-item">
-          <span class="notice-icon">🖱️</span>
-          백업 진행 중에는 채팅창을 건드리지 마세요. 스크롤이 끊기면 메시지가 누락될 수 있습니다.
-        </div>
-        <div class="notice-item">
-          <span class="notice-icon">🔧</span>
-          플로우 업데이트로 DOM 구조가 변경되면 <code class="code-inline">content.js</code> 상단의 셀렉터를 수정해야 할 수 있습니다. F12 → Console에서 오류를 확인하세요.
-        </div>
-        <div class="notice-item">
-          <span class="notice-icon">🖼️</span>
-          이미지·첨부파일은 텍스트로 개수만 기록됩니다 (예: <code class="code-inline">(이미지/첨부 2개)</code>).
-        </div>
-        <div class="notice-item">
-          <span class="notice-icon">🔒</span>
-          모든 처리는 브라우저 로컬에서만 이루어지며, 외부 서버로 데이터를 전송하지 않습니다.
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h3>폴더 선택</h3>
+          <p><strong>압축해제된 확장 프로그램을 로드합니다</strong> 클릭 후 압축 해제한 폴더를 선택하세요.</p>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- ── 다운로드 ── -->
-    <section id="download">
-      <div class="download-box">
-        <h2>다운로드 <span class="version-tag">v1.2.0</span></h2>
-        <p>압축 파일을 내려받아 크롬에 로드하면 바로 사용할 수 있습니다.</p>
+  <!-- 다운로드 -->
+  <section>
+    <h2>다운로드</h2>
+    <div class="btn-group">
+      <a href="flow-backup-ext10.zip" download class="btn-primary">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg>
+        확장프로그램 다운로드
+      </a>
+      <a href="flow_viewer.html" class="btn-secondary">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        백업 뷰어 열기
+      </a>
+    </div>
+    <div class="viewer-desc">
+      <strong style="color:#d4e4f4;">백업 뷰어란?</strong><br />
+      채팅·프로젝트 백업 CSV를 브라우저에서 보기 좋게 열어주는 페이지입니다.
+      <ul style="margin-top:8px;">
+        <li>CSV 파일을 드래그&드롭하거나 직접 불러올 수 있습니다.</li>
+        <li>발신자·날짜 필터, 키워드 검색을 지원합니다.</li>
+        <li>모든 처리는 로컬에서만 이루어집니다.</li>
+      </ul>
+    </div>
+  </section>
 
-        <div class="file-list">
-          <div class="file-item">
-            <div>
-              <div class="file-name">📦 flow-backup-ext-v10b.zip</div>
-              <div class="file-desc">manifest.json + content.js 포함 전체 패키지</div>
-            </div>
-            <div class="file-size">~8 KB</div>
-          </div>
-        </div>
-
-        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:4px;">
-          <a href="flow-backup-ext-v10b.zip" download class="btn-primary" style="display:inline-flex;">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg>
-            ZIP 다운로드
-          </a>
-          <a href="flow_viewer.html" class="btn-secondary" style="display:inline-flex;">
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            백업 뷰어 열기
-          </a>
-        </div>
-
-        <p style="margin-top:20px; font-size:12px; color:var(--muted);">
-          문제가 있으면 F12 → Console 탭에서 오류를 확인해주세요.
-        </p>
-      </div>
-    </section>
-
-  </main>
-
-  <footer>
-    <span>flow.backup — Chrome Extension</span>
-    <span>v1.2.0 · 로컬 처리 · 외부 전송 없음</span>
-  </footer>
-
+</main>
 </body>
 </html>
