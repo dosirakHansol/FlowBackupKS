@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Flow 메신저 대화 백업",
+  "version": "1.2.0",
+  "description": "플로우 채팅/프로젝트 내역을 자동 스크롤 후 CSV로 백업합니다.",
+  "permissions": ["activeTab", "scripting", "downloads"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": ["https://*.flow.team/*", "https://*.myflow.kr/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://*.flow.team/*", "https://*.myflow.kr/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
